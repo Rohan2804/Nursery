@@ -9,12 +9,12 @@ import { useToast } from "@/components/Toast";
 import { Button, Field } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase/browser";
-import { addImage, deleteImage, reorderImages, updateImage } from "./actions";
+import { addImage, deleteImage, reorderImages, updateImage, uploadPreviewImage } from "./actions";
 
 const ACCEPT = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const MAX_MB = 8;
 
-export function ImageManager({ plantId, plantName, images, canEdit }: { plantId: string; plantName: string; images: ImageRow[]; canEdit: boolean }) {
+export function ImageManager({ plantId, plantName, images, canEdit, preview }: { plantId: string; plantName: string; images: ImageRow[]; canEdit: boolean; preview?: boolean }) {
   const [items, setItems] = useState(images);
   const [uploading, setUploading] = useState(0);
   const [editing, setEditing] = useState<ImageRow | null>(null);
@@ -29,8 +29,23 @@ export function ImageManager({ plantId, plantName, images, canEdit }: { plantId:
     const list = Array.from(files);
     const bad = list.find((f) => !ACCEPT.includes(f.type) || f.size > MAX_MB * 1024 * 1024);
     if (bad) return toast("error", `${bad.name}: use JPG, PNG, WebP or AVIF under ${MAX_MB} MB.`);
-    const supabase = createClient();
     setUploading(list.length);
+    if (preview) {
+      // Local preview: the server saves the file into public/preview-uploads.
+      for (const file of list) {
+        const form = new FormData();
+        form.set("plantId", plantId);
+        form.set("alt", plantName);
+        form.set("file", file);
+        const res = await uploadPreviewImage(form);
+        if (!res.ok) toast("error", res.error);
+        setUploading((n) => n - 1);
+      }
+      setUploading(0);
+      toast("success", list.length === 1 ? "Photo added" : `${list.length} photos added`);
+      return router.refresh();
+    }
+    const supabase = createClient();
     for (const file of list) {
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
       const path = `${plantId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;

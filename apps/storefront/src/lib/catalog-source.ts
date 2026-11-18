@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import type { Catalog } from "@vanam/catalog";
 import { PLANT_SELECT, toCatalog, type CollectionRow, type PlanterRow, type PlantWithRelations } from "@vanam/catalog/db";
 import { staticCatalog } from "@vanam/catalog/seed";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { unstable_cache } from "next/cache";
 
 export const CATALOG_TAG = "catalog";
@@ -30,7 +32,7 @@ const cachedCatalog = unstable_cache(fetchFromSupabase, ["catalog-v1"], { tags: 
  * calls /api/revalidate); otherwise serves the built-in catalog so the site always works.
  */
 export async function getCatalog(): Promise<Catalog> {
-  if (!url || !key) return publishedOnly(staticCatalog);
+  if (!url || !key) return publishedOnly(readPreviewCatalog() ?? staticCatalog);
   try {
     return await cachedCatalog();
   } catch (err) {
@@ -44,3 +46,20 @@ const publishedOnly = (c: Catalog): Catalog => ({
   products: c.products.filter((p) => p.status === "published"),
   collections: c.collections.filter((x) => x.status === "published"),
 });
+
+/**
+ * Local development only: when the admin runs in preview mode (no Supabase), it saves the catalog to
+ * apps/admin/.preview/catalog.json. Reading it here lets you test admin → storefront end to end.
+ */
+function readPreviewCatalog(): Catalog | null {
+  if (process.env.NODE_ENV === "production") return null;
+  const file = process.env.PREVIEW_CATALOG_FILE ?? join(process.cwd(), "../admin/.preview/catalog.json");
+  if (!existsSync(file)) return null;
+  try {
+    const s = JSON.parse(readFileSync(file, "utf8")) as { plants: PlantWithRelations[]; planters: PlanterRow[]; collections: CollectionRow[] };
+    return { ...toCatalog(s.plants, s.planters, s.collections), source: "static" };
+  } catch (err) {
+    console.warn("[catalog] could not read the admin preview file:", (err as Error).message);
+    return null;
+  }
+}

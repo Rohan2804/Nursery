@@ -10,7 +10,20 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   if (!url || !key) {
-    return path === "/setup" ? NextResponse.next() : NextResponse.redirect(new URL("/setup", request.url));
+    // Production without Supabase: show setup instructions only.
+    if (process.env.NODE_ENV === "production") {
+      return path === "/setup" ? NextResponse.next() : NextResponse.redirect(new URL("/setup", request.url));
+    }
+    // Local preview: a role cookie stands in for a session.
+    const signedIn = request.cookies.has("vanam_preview_role");
+    const isPublicPath = PUBLIC.some((p) => path === p || path.startsWith(`${p}/`));
+    if (!signedIn && !isPublicPath) {
+      const login = new URL("/login", request.url);
+      if (path !== "/") login.searchParams.set("next", path);
+      return NextResponse.redirect(login);
+    }
+    if (signedIn && path === "/login") return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.next();
   }
 
   let response = NextResponse.next({ request });
@@ -40,5 +53,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|preview-uploads).*)"],
 };

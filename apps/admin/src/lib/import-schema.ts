@@ -32,5 +32,6 @@ export const rowSchema = z.object({
 });
 
 export type ImportRow = z.input<typeof rowSchema>;
+export type ImportRowParsed = z.output<typeof rowSchema>;
 
 

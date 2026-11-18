@@ -1,4 +1,6 @@
+import { isPreview } from "@/lib/repo";
 import { LoginForm } from "./LoginForm";
+import { PreviewLogin } from "./PreviewLogin";
 
 export const metadata = { title: "Sign in" };
 
@@ -25,7 +27,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       </section>
       <section className="grid place-items-center p-6">
         <div className="w-full max-w-sm">
-          <LoginForm next={next} notice={error ? notices[error] : undefined} />
+          {isPreview() ? <PreviewLogin next={next} /> : <LoginForm next={next} notice={error ? notices[error] : undefined} />}
         </div>
       </section>
     </main>

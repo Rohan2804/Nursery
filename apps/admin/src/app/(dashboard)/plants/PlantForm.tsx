@@ -76,11 +76,13 @@ export function PlantForm({
   canEdit,
   canDelete,
   storefrontUrl,
+  preview,
 }: {
   plant: PlantWithRelations | null;
   canEdit: boolean;
   canDelete: boolean;
   storefrontUrl: string;
+  preview?: boolean;
 }) {
   const initial = useMemo(() => fromRow(plant), [plant]);
   const [form, setForm] = useState<PlantInput>(initial);
@@ -216,7 +218,7 @@ export function PlantForm({
 
           <Card title="Photos" description="The first photo is the main image. Drag to reorder; click a photo to set its focal point and alt text.">
             {plant ? (
-              <ImageManager plantId={plant.id} plantName={form.name} images={plant.plant_images} canEdit={canEdit} />
+              <ImageManager plantId={plant.id} plantName={form.name} images={plant.plant_images} canEdit={canEdit} preview={preview} />
             ) : (
               <p className="rounded-2xl border border-dashed border-line px-6 py-10 text-center text-sm text-ink/50">Create the plant first, then add photos here.</p>
             )}
@@ -259,14 +261,13 @@ export function PlantForm({
                         <Toggle checked={v.active} onChange={(x) => setVariant(i, { active: x })} label={`${v.size} on sale`} disabled={!canEdit} />
                       </td>
                       <td className="py-3 pr-3">
-                        <input className="input w-28 tabular-nums" type="number" min={0} step={10} aria-label={`${v.size} price`} value={v.price || ""} onChange={(e) => setVariant(i, { price: Number(e.target.value) })} />
+                        <input className="input w-28 tabular-nums" type="number" min={0} aria-label={`${v.size} price`} value={v.price || ""} onChange={(e) => setVariant(i, { price: Number(e.target.value) })} />
                       </td>
                       <td className="py-3 pr-3">
                         <input
                           className="input w-28 tabular-nums"
                           type="number"
                           min={0}
-                          step={10}
                           aria-label={`${v.size} compare-at price`}
                           placeholder="—"
                           value={v.compareAt ?? ""}

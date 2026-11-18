@@ -5,6 +5,12 @@ import { loadCollections, loadPlants } from "@/lib/data";
 import { env } from "@/lib/env";
 import { CollectionForm } from "../CollectionForm";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const row = (await loadCollections()).find((r) => r.slug === slug);
+  return { title: row?.title ?? "Collection" };
+}
+
 export default async function EditCollectionPage({ params }: { params: Promise<{ slug: string }> }) {
   const admin = await requireAdmin();
   const { slug } = await params;

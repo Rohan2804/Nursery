@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   transpilePackages: ["@vanam/catalog"],
   distDir: process.env.NEXT_DIST_DIR || ".next",
-  experimental: { serverActions: { bodySizeLimit: "2mb" } },
+  experimental: { serverActions: { bodySizeLimit: "10mb" } },
   // The admin must never be indexed or framed.
   async headers() {
     return [

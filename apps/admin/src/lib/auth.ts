@@ -1,10 +1,9 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { createClient } from "./supabase/server";
+import { repo, type Admin, type Role } from "./repo";
 
-export type Role = "staff" | "manager" | "owner";
-export type Admin = { id: string; email: string; name: string; role: Role };
+export type { Admin, Role };
 
 const rank: Record<Role, number> = { staff: 1, manager: 2, owner: 3 };
 export const can = (admin: Pick<Admin, "role">, min: Role) => rank[admin.role] >= rank[min];
@@ -16,16 +15,7 @@ export const ROLE_INFO: Record<Role, { label: string; summary: string }> = {
 };
 
 /** The signed-in, active admin for this request — or null. */
-export const getAdmin = cache(async (): Promise<Admin | null> => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from("admin_users").select("email, full_name, role, active").eq("user_id", user.id).maybeSingle();
-  if (!data || !data.active) return null;
-  return { id: user.id, email: data.email, name: data.full_name || data.email, role: data.role as Role };
-});
+export const getAdmin = cache(async (): Promise<Admin | null> => repo().currentAdmin());
 
 /** Use in pages: redirects to login, or to the dashboard if the role is too low. */
 export async function requireAdmin(min: Role = "staff"): Promise<Admin> {

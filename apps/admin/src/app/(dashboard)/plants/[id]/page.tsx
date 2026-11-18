@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { can, requireAdmin } from "@/lib/auth";
 import { loadPlant } from "@/lib/data";
 import { env } from "@/lib/env";
+import { isPreview } from "@/lib/repo";
 import { PlantForm } from "../PlantForm";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -17,5 +18,5 @@ export default async function EditPlantPage({ params }: { params: Promise<{ id: 
   const plant = await loadPlant(id);
   if (!plant) notFound();
   // Keyed by updated_at so the form resets to fresh server data after each save.
-  return <PlantForm key={plant.updated_at} plant={plant} canEdit={can(admin, "manager")} canDelete={can(admin, "owner")} storefrontUrl={env.storefrontUrl} />;
+  return <PlantForm key={plant.updated_at} plant={plant} canEdit={can(admin, "manager")} canDelete={can(admin, "owner")} storefrontUrl={env.storefrontUrl} preview={isPreview()} />;
 }

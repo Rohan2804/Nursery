@@ -46,7 +46,7 @@ export function PlantersEditor({ rows }: { rows: PlanterRow[] }) {
                   <input className="input" value={p.note} onChange={(e) => set(i, { note: e.target.value })} aria-label="Note" />
                 </td>
                 <td className="py-3 pr-3">
-                  <input className="input w-28" type="number" min={0} step={10} value={p.price} onChange={(e) => set(i, { price: Number(e.target.value) })} aria-label="Price" />
+                  <input className="input w-28" type="number" min={0} value={p.price} onChange={(e) => set(i, { price: Number(e.target.value) })} aria-label="Price" />
                 </td>
                 <td className="py-3 pr-3">
                   <input className="input w-20" type="number" value={p.sortOrder} onChange={(e) => set(i, { sortOrder: Number(e.target.value) })} aria-label="Order" />

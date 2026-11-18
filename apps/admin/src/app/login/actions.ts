@@ -1,6 +1,9 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { isPreview } from "@/lib/repo";
+import { PREVIEW_ROLE_COOKIE } from "@/lib/repo/preview";
 import { env } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,4 +34,14 @@ export async function sendReset(_: LoginState, form: FormData): Promise<LoginSta
   await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${env.adminUrl}/auth/callback?next=/settings/password` });
   // Same response whether or not the account exists, so emails can't be probed.
   return { sent: true };
+}
+
+/** Local preview only: sign in as a demo person with the chosen role (no password). */
+export async function previewSignIn(form: FormData) {
+  if (!isPreview()) redirect("/login");
+  const role = String(form.get("role"));
+  if (!["owner", "manager", "staff"].includes(role)) redirect("/login");
+  (await cookies()).set(PREVIEW_ROLE_COOKIE, role, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
+  const next = String(form.get("next") ?? "/");
+  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/");
 }

@@ -1,11 +1,12 @@
 import { isConfigured } from "@/lib/env";
+import { isPreview } from "@/lib/repo";
 import { redirect } from "next/navigation";
 
 export const metadata = { title: "Setup" };
 
 /** Shown until Supabase keys are configured. */
 export default function SetupPage() {
-  if (isConfigured()) redirect("/");
+  if (isConfigured() || isPreview()) redirect("/");
   return (
     <main className="grid min-h-svh place-items-center bg-forest-950 p-6 text-cream">
       <div className="max-w-xl">

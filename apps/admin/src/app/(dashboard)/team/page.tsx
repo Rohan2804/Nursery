@@ -1,14 +1,13 @@
 import { PageHeader } from "@/components/ui";
 import { requireAdmin, ROLE_INFO, type Role } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { loadTeam } from "@/lib/data";
 import { TeamManager } from "./TeamManager";
 
 export const metadata = { title: "Team" };
 
 export default async function TeamPage() {
   const admin = await requireAdmin("owner");
-  const supabase = await createClient();
-  const { data } = await supabase.from("admin_users").select("user_id, email, full_name, role, active, created_at").order("created_at");
+  const members = await loadTeam();
   return (
     <>
       <PageHeader eyebrow="Access" title="Team" description="Invite people and choose what they can do. Everyone signs in with their own email and password." />
@@ -20,7 +19,7 @@ export default async function TeamPage() {
           </div>
         ))}
       </div>
-      <TeamManager members={(data ?? []) as { user_id: string; email: string; full_name: string; role: Role; active: boolean; created_at: string }[]} selfId={admin.id} />
+      <TeamManager members={members} selfId={admin.id} />
     </>
   );
 }

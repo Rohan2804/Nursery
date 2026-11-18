@@ -1,9 +1,9 @@
 "use server";
 
 import { z } from "zod";
-import { check, logActivity, publishChanges, run } from "@/lib/actions";
+import { logActivity, publishChanges, run } from "@/lib/actions";
 import { assertRole } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { repo } from "@/lib/repo";
 
 const planterSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/, "ID must be lowercase letters, numbers and hyphens").min(2),
@@ -20,13 +20,7 @@ export async function savePlanters(input: z.infer<typeof planterSchema>[]) {
     const admin = await assertRole("manager");
     const list = z.array(planterSchema).parse(input);
     if (!list.some((p) => p.active)) throw new Error("Keep at least one planter available.");
-    const supabase = await createClient();
-    check(
-      await supabase
-        .from("planters")
-        .upsert(list.map((p) => ({ id: p.id, label: p.label, note: p.note, price: p.price, swatch: p.swatch, active: p.active, sort_order: p.sortOrder })))
-        .select("id"),
-    );
+    await repo().savePlanters(list);
     await logActivity(admin, "update", "planter", null, `Updated planter options (${list.length})`);
     await publishChanges("/planters");
   }, "Planters saved");
