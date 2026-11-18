@@ -1,4 +1,41 @@
-# Vanam — House of Plants (customer storefront)
+# Vanam — House of Plants
+
+Monorepo for the Vanam nursery's online presence.
+
+| Path | What | Dev URL | Production |
+| --- | --- | --- | --- |
+| `apps/storefront` | Customer website (Next.js) | http://localhost:3000 | www.vanam.in |
+| `apps/admin` | Catalog admin (Next.js + Supabase) | http://localhost:3001 | admin.vanam.in |
+| `packages/catalog` | Shared catalog types, pricing, collection rules, seed data | — | — |
+| `packages/theme` | Shared brand tokens (colours, fonts) | — | — |
+| `supabase/` | Database schema, security policies and seed SQL | — | — |
+
+```bash
+npm install
+npm run dev            # both apps
+npm run dev:storefront # or one at a time
+npm run dev:admin
+```
+
+**Setting up the admin and database:** see [docs/ADMIN_SETUP.md](docs/ADMIN_SETUP.md). Without it, the storefront runs on its built-in catalog.
+
+### Catalog admin (apps/admin)
+
+- **Overview** — live/draft counts, low-stock and sold-out sizes, recent activity
+- **Plants** — search, filter, bulk publish/unpublish/archive; editor with basics, photos, sizes & pricing & stock, care details, attributes, merchandising and SEO (with Google preview)
+- **Photos** — drag-and-drop upload to Supabase Storage, drag to reorder, focal-point and alt-text editor with crop previews
+- **Inventory** — quick stock editing for every size (Staff can do this; prices are protected)
+- **Collections** — rule builder (light, placement, pet safety, care, price, size) with live preview and manual include/exclude
+- **Planters** — pot options and prices
+- **Import / export** — CSV round-trip for bulk price and stock edits, with a validated preview
+- **Activity** — audit log of every change; **Team** — invite people as Staff / Manager / Owner
+- Saving anything refreshes the storefront instantly via `/api/revalidate`
+
+---
+
+# Storefront details
+
+Paths in this section are relative to `apps/storefront/` unless they start with `packages/`.
 
 Premium online storefront for the nursery. Next.js 15 · React 19 · Tailwind CSS v4 · Framer Motion · Lenis smooth scroll.
 
@@ -17,15 +54,14 @@ Open http://localhost:3000
 
 | What | File |
 | --- | --- |
-| Brand name, address, hours, phone, delivery threshold | `src/lib/site.ts` |
-| Plants, prices, rooms/light tiles, plant-finder logic | `src/lib/catalog.ts` |
+| Brand name, address, hours, phone, delivery threshold | `apps/storefront/src/lib/site.ts` |
+| Catalog data (fallback/seed), pricing, collection rules, plant finder | `packages/catalog/src/` — live data comes from Supabase via the admin |
+| Rooms/light tiles, care copy | `apps/storefront/src/lib/content.ts` |
 | Photography ids (Unsplash placeholders) | `src/lib/utils.ts` → `IMAGES` |
-| Colours, fonts, easing tokens | `src/app/globals.css` (`@theme`) |
+| Colours, fonts, easing tokens | `packages/theme/tokens.css` |
 | Homepage section order | `src/app/(store)/page.tsx` |
 | Plant detail page | `src/app/(store)/plants/[id]/page.tsx` + `src/components/product/` |
 | Checkout | `src/app/checkout/page.tsx` + `src/components/checkout/` |
-| Sizes, planters & pricing rules | `src/lib/variants.ts` |
-| Per-plant care details & grower notes | `src/lib/plant-details.ts` |
 
 ## Homepage sections
 
@@ -49,7 +85,7 @@ Global: hide-on-scroll header with announcement bar, slide-out bag with free-del
 | --- | --- |
 | `/` | Homepage |
 | `/plants` | Shop all — filters (type, light, placement, care, price, size, pet safe), sort and search, all kept in the URL |
-| `/collections`, `/collections/[slug]` | 14 SEO landing pages by type, room, light and need (`src/lib/collections.ts`) |
+| `/collections`, `/collections/[slug]` | SEO landing pages by type, room, light and need — managed in the admin |
 | `/plants/[id]` | Plant detail — gallery, size & planter, pincode estimate, care, reviews (sample), related |
 | `/checkout` | 3-step checkout with confirmation (payment simulated) |
 | `/track-order` | Track by order number + mobile |

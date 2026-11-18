@@ -1,0 +1,25 @@
+/* Vanam brand tokens — shared by the storefront and the admin. */
+@theme {
+  --color-forest-950: #08110c;
+  --color-forest-900: #0d1a13;
+  --color-forest-800: #13261c;
+  --color-forest-700: #1c3628;
+  --color-forest-600: #2a4a37;
+  --color-moss: #6b8a5c;
+  --color-sage: #a8b89a;
+  --color-cream: #ece6d8;
+  --color-bone: #f4efe4;
+  --color-brass: #c9a66b;
+  --color-lime: #d6e3a0;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-silk: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+}
+
+@theme {
+  --font-display: "Instrument Serif", "Times New Roman", serif;
+  --font-sans: "Manrope", system-ui, sans-serif;
+}
